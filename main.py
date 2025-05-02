@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import date
 import os
 
+
 def main():
     print("Hello from python-parser!")
     print("Starting...")
@@ -25,9 +26,8 @@ def main():
         res[path] = total_commits
     sorted_items = sorted(res.items(), key=lambda item: item[1], reverse=True)
     for k, v in sorted_items:
-        print(f"#{k.split("/")[-1]}: #{v}")
-    print("done")
-
+        if v > 0:
+            print(f"{k.split("/")[-1]}: {v}")
 
 def find_directories(parent_dir="./") -> list[str]:
     paths = []
@@ -78,6 +78,11 @@ def has_commits(repo: Repo):
 
 def get_total_commits(commit_counts: dict[date, int]) -> int:
     return sum([x for (k, x) in commit_counts])
+
+def read_file(path="./"):
+    with open(path, 'r') as f:
+        for line in f:
+            print(line.strip())
 
 
 if __name__ == "__main__":
