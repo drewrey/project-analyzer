@@ -4,7 +4,9 @@ import datetime
 from collections import defaultdict
 from datetime import date
 import os
+import logging
 
+DEBUG = False
 
 def main():
     parser = argparse.ArgumentParser(
@@ -15,7 +17,10 @@ def main():
     parser.add_argument('-d', '--days', type=int, default=30, help="How many days to go back?")
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     args = parser.parse_args()
-    print(f"Analyzing projects in {args.directory} ...")
+    log_level = 'DEBUG' if args.verbose else 'INFO'
+    logging.basicConfig(level=log_level, format='%(levelname)s: %(message)s')
+
+    logging.info(f"Analyzing projects in {args.directory} ...")
 
     paths = find_directories(args.directory)
     commits_by_path = calculate_commits_by_path(paths, args.days)
@@ -51,6 +56,7 @@ def is_git_repo(path) -> bool:
         Repo(path)
         return True
     except (InvalidGitRepositoryError, NoSuchPathError):
+        logging.debug(f"Directory not git repo: {path}")
         return False
 
 def get_commits_for_repo(repo_path="./", days=30) -> dict[date, int]:
