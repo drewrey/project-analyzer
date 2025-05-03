@@ -15,19 +15,25 @@ def main():
     parser.add_argument('-d', '--days', type=int, default=30, help="How many days to go back?")
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     args = parser.parse_args()
-    # print(args.directory, args.days, args.verbose)
     print(f"Analyzing projects in {args.directory} ...")
+
     paths = find_directories(args.directory)
+    commits_by_path = calculate_commits_by_path(paths, args.days)
+    print_results(commits_by_path)
+
+def calculate_commits_by_path(paths: list[str], days: int) -> dict[str, int]:
     res = {}
     for path in paths:
-        commits = get_commits_for_repo(path, days=args.days)
+        commits = get_commits_for_repo(path, days)
         total_commits = get_total_commits(commits)
         res[path] = total_commits
-    sorted_items = sorted(res.items(), key=lambda item: item[1], reverse=True)
+    return sorted(res.items(), key=lambda item: item[1], reverse=True)
+
+def print_results(commits_by_path: dict[str, int]):
     print("----------------")
     print("Commits per repo")
     print("----------------")
-    for k, v in sorted_items:
+    for k, v in commits_by_path:
         if v > 0:
             print(f"{k.split("/")[-1]}: {v}")
 
@@ -38,9 +44,7 @@ def find_directories(parent_dir="./") -> list[str]:
         if os.path.isdir(full_path):
             if is_git_repo(full_path):
                 paths.append(full_path)
-    # print(f"paths are #{paths}")
     return paths
-
 
 def is_git_repo(path) -> bool:
     try:
@@ -54,9 +58,6 @@ def get_commits_for_repo(repo_path="./", days=30) -> dict[date, int]:
 
     end_date = datetime.datetime.now()
     start_date = end_date - datetime.timedelta(days=days)
-    # print(f"path is #{repo_path}")
-    # print(f"end date is #{end_date}")
-    # print(f"start date is #{start_date}")
 
     commit_counts = defaultdict(int)
 
@@ -79,12 +80,6 @@ def has_commits(repo: Repo) -> bool:
 
 def get_total_commits(commit_counts: dict[date, int]) -> int:
     return sum([x for (k, x) in commit_counts])
-
-def read_file(path="./"):
-    with open(path, 'r') as f:
-        for line in f:
-            print(line.strip())
-
 
 if __name__ == "__main__":
     main()
