@@ -7,17 +7,16 @@ import os
 
 
 def main():
-    print("Hello from python-parser!")
-    print("Starting...")
     parser = argparse.ArgumentParser(
-                        prog='ProgramName',
-                        description='What the program does',
-                        epilog='Text at the bottom of help')
+                        prog='Projects Analyzer',
+                        description='Analyze the commits for all git repos in a directory',
+                        epilog='Make suggestions on github\nhttps://github.com/drewrey/project-analyzer')
     parser.add_argument('directory')
     parser.add_argument('-d', '--days', type=int, default=30, help="How many days to go back?")
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     args = parser.parse_args()
-    print(args.directory, args.days, args.verbose)
+    # print(args.directory, args.days, args.verbose)
+    print(f"Analyzing projects in {args.directory} ...")
     paths = find_directories(args.directory)
     res = {}
     for path in paths:
@@ -25,6 +24,9 @@ def main():
         total_commits = get_total_commits(commits)
         res[path] = total_commits
     sorted_items = sorted(res.items(), key=lambda item: item[1], reverse=True)
+    print("----------------")
+    print("Commits per repo")
+    print("----------------")
     for k, v in sorted_items:
         if v > 0:
             print(f"{k.split("/")[-1]}: {v}")
@@ -36,7 +38,7 @@ def find_directories(parent_dir="./") -> list[str]:
         if os.path.isdir(full_path):
             if is_git_repo(full_path):
                 paths.append(full_path)
-    print(f"paths are #{paths}")
+    # print(f"paths are #{paths}")
     return paths
 
 
@@ -52,12 +54,11 @@ def get_commits_for_repo(repo_path="./", days=30) -> dict[date, int]:
 
     end_date = datetime.datetime.now()
     start_date = end_date - datetime.timedelta(days=days)
-    print(f"path is #{repo_path}")
-    print(f"end date is #{end_date}")
-    print(f"start date is #{start_date}")
+    # print(f"path is #{repo_path}")
+    # print(f"end date is #{end_date}")
+    # print(f"start date is #{start_date}")
 
     commit_counts = defaultdict(int)
-
 
     if not has_commits(repo):
         return {}
@@ -69,7 +70,7 @@ def get_commits_for_repo(repo_path="./", days=30) -> dict[date, int]:
     sorted_commit_counts = sorted(commit_counts.items())
     return sorted_commit_counts
 
-def has_commits(repo: Repo):
+def has_commits(repo: Repo) -> bool:
     try:
         repo.head.commit
         return True
